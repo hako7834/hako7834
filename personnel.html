@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The One – 인원 관리</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="personnel.css" />
+</head>
+<body>
+
+<!-- ──────────── SIDEBAR ──────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">THE<br>ONE</div>
+  <nav class="sidebar-nav">
+    <a href="index (1).html" class="sidebar-btn" title="대시보드">
+      <span class="icon">🏠</span>
+      <span>홈</span>
+    </a>
+    <a href="personnel.html" class="sidebar-btn active" title="인원관리">
+      <span class="icon">👥</span>
+      <span>인원</span>
+    </a>
+  </nav>
+</aside>
+
+<!-- ──────────── MAIN WRAPPER ──────────── -->
+<div class="main-wrapper">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">THE <span>ONE</span></div>
+    <div class="topbar-title">인원 관리</div>
+  </div>
+
+  <!-- PAGE CONTENT -->
+  <div class="page-content">
+
+    <!-- CONTENT AREA: left + right panels -->
+    <div class="content-area">
+
+      <!-- LEFT PANEL: personnel table -->
+      <div class="left-panel">
+        <div class="card-header">
+          <span>👥</span> 인원 목록
+        </div>
+        <div class="card-body">
+          <!-- Controls -->
+          <div class="pn-controls">
+            <div style="position:relative;">
+              <button class="pn-org-btn" id="pnOrgBtn">
+                <span id="pnOrgTitle">전체</span> ▾
+              </button>
+              <div class="pn-org-dropdown" id="pnOrgDropdown" style="display:none; top:36px; left:0;"></div>
+            </div>
+            <input type="text" class="pn-search-input" id="pnSearchInput" placeholder="이름 검색…" />
+          </div>
+
+          <!-- Table -->
+          <div class="pn-table-wrapper">
+            <div class="pn-table-head">
+              <div class="pn-th"><input type="checkbox" id="pnCheckAll" /></div>
+              <div class="pn-th">계급</div>
+              <div class="pn-th">이름</div>
+              <div class="pn-th">소속</div>
+              <div class="pn-th">상태</div>
+            </div>
+            <div class="pn-table-body" id="pnTableBody">
+              <!-- rows rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Table actions -->
+          <div class="pn-table-actions">
+            <button class="pn-btn pn-btn-gold" id="pnAddPersonBtn">+ 인원 추가</button>
+            <button class="pn-btn pn-btn-outline" id="pnEditPersonBtn">✏️ 수정</button>
+            <button class="pn-btn pn-btn-danger" id="pnDelPersonBtn">🗑 삭제</button>
+            <button class="pn-btn pn-btn-navy" id="pnManageOrgBtn">🏢 조직 관리</button>
+          </div>
+        </div>
+      </div><!-- /left-panel -->
+
+      <!-- RIGHT PANEL: status management -->
+      <div class="right-panel">
+        <div class="card-header">
+          <span>🏷</span> 상태 관리
+        </div>
+        <div class="card-body">
+          <div class="pn-detail-section">
+            <div class="pn-detail-section-title">상태 목록</div>
+            <div class="pn-status-grid" id="pnStatusGrid">
+              <!-- status items rendered by JS -->
+            </div>
+            <div class="pn-status-hint">상태를 클릭하면 월력표에 드래그로 입력할 수 있습니다.</div>
+            <div class="pn-selected-status-label" id="pnSelectedStatusLabel"></div>
+          </div>
+
+          <!-- Add status form -->
+          <div class="pn-add-status-form">
+            <input type="text" class="pn-status-name-input" id="pnStatusNameInput" placeholder="상태명 입력…" />
+            <input type="color" class="pn-color-picker" id="pnStatusColorPicker" value="#1a3558" />
+            <button class="pn-btn pn-btn-gold" id="pnAddStatusBtn">추가</button>
+          </div>
+
+          <!-- Selected person detail -->
+          <div class="pn-detail-section" style="margin-top:14px;" id="pnPersonDetail">
+            <div class="pn-detail-section-title">선택 인원 정보</div>
+            <div id="pnPersonDetailContent" class="pn-detail-empty">인원을 선택하세요</div>
+          </div>
+        </div>
+      </div><!-- /right-panel -->
+
+    </div><!-- /content-area -->
+
+    <!-- CALENDAR CARD ROW (separate card below) -->
+    <div class="pn-calendar-row">
+      <div class="pn-calendar-card" id="pnCalSection">
+        <div class="card-header">
+          <span>📅</span> 월력표
+        </div>
+        <div class="pn-calendar-section">
+          <div class="pn-cal-header">
+            <button class="pn-cal-nav-btn" id="pnCalPrev">‹</button>
+            <div class="pn-cal-title" id="pnCalTitle">2024년 1월</div>
+            <button class="pn-cal-nav-btn" id="pnCalNext">›</button>
+          </div>
+          <div class="pn-cal-body" id="pnCalBody">
+            <!-- calendar table rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </div><!-- /pn-calendar-row -->
+
+  </div><!-- /page-content -->
+</div><!-- /main-wrapper -->
+
+<!-- GUARD OVERLAY (covers everything except #pnCalSection due to z-index) -->
+<div id="pnGuardOverlay"></div>
+
+<!-- ──────────── MODALS ──────────── -->
+
+<!-- Add/Edit Person Modal -->
+<div class="pn-modal-overlay" id="pnPersonModal">
+  <div class="pn-modal">
+    <button class="pn-modal-close" id="pnPersonModalClose">✕</button>
+    <div class="pn-modal-title" id="pnPersonModalTitle">인원 추가</div>
+    <div class="pn-form-group">
+      <label class="pn-form-label">계급</label>
+      <input class="pn-form-input" id="pnInputRank" placeholder="예: 병장" />
+    </div>
+    <div class="pn-form-group">
+      <label class="pn-form-label">이름</label>
+      <input class="pn-form-input" id="pnInputName" placeholder="성명" />
+    </div>
+    <div class="pn-form-group">
+      <label class="pn-form-label">소속</label>
+      <select class="pn-form-select" id="pnInputOrg"></select>
+    </div>
+    <div class="pn-modal-actions">
+      <button class="pn-btn pn-btn-outline" id="pnPersonModalCancel">취소</button>
+      <button class="pn-btn pn-btn-gold" id="pnPersonModalSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Org Management Modal -->
+<div class="pn-modal-overlay" id="pnOrgModal">
+  <div class="pn-modal">
+    <button class="pn-modal-close" id="pnOrgModalClose">✕</button>
+    <div class="pn-modal-title">조직 관리</div>
+    <div id="pnOrgTree" style="margin-bottom:14px;"></div>
+    <hr style="margin-bottom:14px;border:none;border-top:1px solid #eee;" />
+    <div class="pn-form-group">
+      <label class="pn-form-label">새 상위 조직</label>
+      <div style="display:flex;gap:6px;">
+        <input class="pn-form-input" id="pnNewCatInput" placeholder="대대, 중대…" style="flex:1;" />
+        <button class="pn-btn pn-btn-navy" id="pnAddCatBtn">추가</button>
+      </div>
+    </div>
+    <div class="pn-form-group">
+      <label class="pn-form-label">새 하위 조직</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <select class="pn-form-select" id="pnSubParentSelect" style="flex:1;min-width:100px;"></select>
+        <input class="pn-form-input" id="pnNewSubInput" placeholder="소대…" style="flex:1;min-width:80px;" />
+        <button class="pn-btn pn-btn-gold" id="pnAddSubBtn">추가</button>
+      </div>
+    </div>
+    <div class="pn-modal-actions">
+      <button class="pn-btn pn-btn-outline" id="pnOrgModalClose2">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script src="personnel.js"></script>
+</body>
+</html>

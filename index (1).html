@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The One – 대시보드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ──────────── RESET / BASE ──────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Serif KR', 'Noto Serif', serif;
+      background: #c8cdd6;
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* ──────────── SIDEBAR ──────────── */
+    .sidebar {
+      width: 75px;
+      min-height: 100vh;
+      background: #1a3558;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px 0;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 1000;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.18);
+    }
+
+    .sidebar-logo {
+      color: #b8962e;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.3;
+      margin-bottom: 22px;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      padding: 0 8px;
+    }
+
+    .sidebar-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 6px;
+      background: transparent;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: rgba(255,255,255,0.65);
+      font-size: 10px;
+      font-family: 'Noto Serif KR', serif;
+      transition: background 0.2s, color 0.2s;
+      text-decoration: none;
+    }
+    .sidebar-btn:hover, .sidebar-btn.active {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+    .sidebar-btn .icon { font-size: 20px; }
+
+    /* ──────────── MAIN WRAPPER ──────────── */
+    .main-wrapper {
+      margin-left: 75px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ──────────── TOP BAR ──────────── */
+    .topbar {
+      background: #c8cdd6;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 14px;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(26,53,88,0.1);
+    }
+    .topbar-logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a3558;
+      letter-spacing: 1px;
+    }
+    .topbar-logo span { color: #b8962e; }
+    .topbar-subtitle {
+      font-size: 13px;
+      color: #1a3558;
+      opacity: 0.65;
+    }
+    .topbar-date {
+      margin-left: auto;
+      font-size: 12px;
+      color: #1a3558;
+      opacity: 0.7;
+    }
+
+    /* ──────────── DATE NAV ──────────── */
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px 0;
+    }
+    .date-nav-btn {
+      background: #1a3558;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .date-nav-btn:hover { background: #243f66; }
+    .date-nav-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a3558;
+      min-width: 120px;
+      text-align: center;
+    }
+    .date-nav-today {
+      background: #b8962e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-family: 'Noto Serif KR', serif;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .date-nav-today:hover { opacity: 0.85; }
+
+    /* ──────────── CONTENT ──────────── */
+    .content {
+      flex: 1;
+      padding: 18px 28px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* ──────────── KPI ROW ──────────── */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .kpi-card {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 18px 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border: 2px solid transparent;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .kpi-card.clickable { cursor: pointer; }
+    .kpi-card.expanded  { border-color: #b8962e; box-shadow: 0 4px 24px rgba(184,150,46,0.22); }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #888;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a3558;
+      line-height: 1.1;
+    }
+    .kpi-sub {
+      font-size: 11px;
+      color: #aaa;
+    }
+    .kpi-accent-bar {
+      height: 4px;
+      border-radius: 2px;
+      margin-top: 8px;
+      transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    /* ──────────── KPI DETAIL (inline) ──────────── */
+    .kpi-detail {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.35s ease;
+    }
+    .kpi-card.expanded .kpi-detail {
+      max-height: 400px;
+    }
+    .kpi-detail-inner {
+      padding-top: 12px;
+      border-top: 1px solid #f0f2f5;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .kpi-detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #555;
+      padding: 4px 0;
+    }
+    .kpi-detail-name { font-weight: 600; color: #333; }
+    .kpi-detail-info { color: #888; font-size: 11px; }
+
+    /* ──────────── MAIN CHARTS ROW ──────────── */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .card-header {
+      background: #1a3558;
+      color: #fff;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .card-body {
+      padding: 20px;
+    }
+
+    /* ──────────── DONUT CHART ──────────── */
+    .donut-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .donut-svg-wrap {
+      position: relative;
+      width: 160px;
+      height: 160px;
+    }
+    .donut-svg-wrap svg {
+      width: 160px;
+      height: 160px;
+      transform: rotate(-90deg);
+    }
+    .donut-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #888;
+      text-align: center;
+    }
+    .donut-center-val {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1a3558;
+      line-height: 1;
+    }
+    .donut-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+    .donut-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #555;
+    }
+    .donut-legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+    .donut-legend-label { flex: 1; }
+    .donut-legend-val { font-weight: 700; color: #1a3558; }
+
+    /* ──────────── BAR CHART ──────────── */
+    .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+    .bar-row { display: flex; flex-direction: column; gap: 4px; }
+    .bar-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #555;
+    }
+    .bar-label-name { font-weight: 600; color: #1a3558; }
+    .bar-label-pct { color: #888; }
+    .bar-track {
+      background: #f0f2f5;
+      border-radius: 6px;
+      height: 18px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      width: 0%;
+      transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 6px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.9);
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    /* ──────────── SCROLLBAR ──────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f0f2f5; }
+    ::-webkit-scrollbar-thumb { background: #c0c7d0; border-radius: 3px; }
+
+    /* ──────────── RESPONSIVE ──────────── */
+    @media (max-width: 900px) {
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+      .charts-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 540px) {
+      .kpi-row { grid-template-columns: 1fr; }
+      .main-wrapper { margin-left: 0; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ──────────── SIDEBAR ──────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">THE<br>ONE</div>
+  <nav class="sidebar-nav">
+    <a href="index (1).html" class="sidebar-btn active" title="대시보드">
+      <span class="icon">🏠</span>
+      <span>홈</span>
+    </a>
+    <a href="personnel.html" class="sidebar-btn" title="인원관리">
+      <span class="icon">👥</span>
+      <span>인원</span>
+    </a>
+  </nav>
+</aside>
+
+<!-- ──────────── MAIN WRAPPER ──────────── -->
+<div class="main-wrapper">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">THE <span>ONE</span></div>
+    <div class="topbar-subtitle">전력 현황 대시보드</div>
+    <div class="topbar-date" id="topbarDate"></div>
+  </div>
+
+  <!-- DATE NAV -->
+  <div class="date-nav">
+    <button class="date-nav-btn" id="datePrev">‹</button>
+    <div class="date-nav-title" id="dateTitle">2024년 1월 1일</div>
+    <button class="date-nav-btn" id="dateNext">›</button>
+    <button class="date-nav-today" id="dateToday">오늘</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="content">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-row" id="kpiRow">
+      <!-- rendered by JS -->
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="charts-row">
+
+      <!-- DONUT CHART -->
+      <div class="card">
+        <div class="card-header">📊 현황 비율</div>
+        <div class="card-body">
+          <div class="donut-wrap">
+            <div class="donut-svg-wrap">
+              <svg id="donutSvg" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- segments rendered by JS -->
+              </svg>
+              <div class="donut-center">
+                <div class="donut-center-val" id="donutCenterVal">-</div>
+                <div>현재원</div>
+              </div>
+            </div>
+            <div class="donut-legend" id="donutLegend"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BAR CHART -->
+      <div class="card">
+        <div class="card-header">📈 소속별 현황</div>
+        <div class="card-body">
+          <div class="bar-chart" id="barChart">
+            <!-- rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /charts-row -->
+
+  </div><!-- /content -->
+</div><!-- /main-wrapper -->
+
+<script>
+/* ──────────── STORAGE ──────────── */
+const LS = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+};
+
+/* ──────────── LOAD DATA ──────────── */
+let persons   = LS.get('theone_persons',    []);
+let orgs      = LS.get('theone_orgs',       []);
+let statuses  = LS.get('theone_statuses',   []);
+let statusCal = LS.get('theone_status_cal', {});
+
+// Seed if empty (standalone view)
+if (persons.length === 0) {
+  persons = [
+    { id: 'p-0', rank: '병장', name: '김민준', org: 'sub-0-0' },
+    { id: 'p-1', rank: '상병', name: '이도윤', org: 'sub-0-1' },
+    { id: 'p-2', rank: '일병', name: '박서준', org: 'sub-1-0' },
+    { id: 'p-3', rank: '이병', name: '최지호', org: 'sub-1-1' },
+    { id: 'p-4', rank: '병장', name: '정하준', org: 'sub-0-0' },
+    { id: 'p-5', rank: '상병', name: '강민서', org: 'sub-1-0' },
+    { id: 'p-6', rank: '일병', name: '윤준서', org: 'sub-0-1' },
+    { id: 'p-7', rank: '이병', name: '장현우', org: 'sub-1-1' },
+  ];
+}
+if (orgs.length === 0) {
+  orgs = [
+    { id: 'cat-0', name: '본부중대', subs: [{ id: 'sub-0-0', name: '1소대' }, { id: 'sub-0-1', name: '2소대' }] },
+    { id: 'cat-1', name: '1중대',   subs: [{ id: 'sub-1-0', name: '1소대' }, { id: 'sub-1-1', name: '2소대' }] },
+  ];
+}
+if (statuses.length === 0) {
+  statuses = [
+    { id: 's-0', name: '출타', color: '#e67e22' },
+    { id: 's-1', name: '열외', color: '#8e44ad' },
+    { id: 's-2', name: '당직', color: '#c0392b' },
+  ];
+}
+
+/* ──────────── DATE ──────────── */
+let currentDate = new Date();
+currentDate.setHours(0, 0, 0, 0);
+
+function dateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatTitle(d) {
+  const KO_DAY = ['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 (${KO_DAY[d.getDay()]})`;
+}
+
+/* ──────────── COMPUTE STATS ──────────── */
+function computeStats(date) {
+  const ds = dateStr(date);
+  const total = persons.length;
+  let 출타 = 0, 열외 = 0;
+  const 출타List = [], 열외List = [];
+
+  statuses.forEach(st => {
+    persons.forEach(p => {
+      const cal = statusCal[p.id] || [];
+      const has = cal.some(e => e.from <= ds && e.to >= ds && e.status === st.name);
+      if (has) {
+        if (st.name === '출타') { 출타++; 출타List.push(p); }
+        else if (st.name === '열외') { 열외++; 열외List.push(p); }
+      }
+    });
+  });
+
+  const 현재원 = total - 출타 - 열외;
+
+  return { total, 현재원: Math.max(0, 현재원), 출타, 열외, 출타List, 열외List };
+}
+
+/* ──────────── ORG LABEL ──────────── */
+function getOrgLabel(orgId) {
+  for (const cat of orgs) {
+    if (cat.id === orgId) return cat.name;
+    for (const sub of cat.subs) {
+      if (sub.id === orgId) return cat.name + ' ' + sub.name;
+    }
+  }
+  return orgId;
+}
+
+/* ──────────── RENDER KPI ──────────── */
+const kpiExpanded = { 출타: false, 열외: false };
+
+function renderKpi() {
+  const stats = computeStats(currentDate);
+  const row = document.getElementById('kpiRow');
+
+  const cards = [
+    {
+      id: 'kpi-total',
+      label: '총원',
+      value: stats.total,
+      color: '#1a3558',
+      clickable: false,
+      sub: '전체 인원',
+      detail: null,
+    },
+    {
+      id: 'kpi-present',
+      label: '현재원',
+      value: stats.현재원,
+      color: '#27ae60',
+      clickable: false,
+      sub: `총원 대비 ${stats.total ? Math.round(stats.현재원/stats.total*100) : 0}%`,
+      detail: null,
+    },
+    {
+      id: 'kpi-out',
+      label: '출타',
+      value: stats.출타,
+      color: '#e67e22',
+      clickable: true,
+      key: '출타',
+      sub: `총원 대비 ${stats.total ? Math.round(stats.출타/stats.total*100) : 0}%`,
+      detail: stats.출타List,
+    },
+    {
+      id: 'kpi-off',
+      label: '열외',
+      value: stats.열외,
+      color: '#8e44ad',
+      clickable: true,
+      key: '열외',
+      sub: `총원 대비 ${stats.total ? Math.round(stats.열외/stats.total*100) : 0}%`,
+      detail: stats.열외List,
+    },
+  ];
+
+  row.innerHTML = '';
+
+  cards.forEach(card => {
+    const div = document.createElement('div');
+    div.className = 'kpi-card' + (card.clickable ? ' clickable' : '') + (card.key && kpiExpanded[card.key] ? ' expanded' : '');
+    div.id = card.id;
+
+    const pct = stats.total ? Math.round(card.value / stats.total * 100) : 0;
+
+    let detailHtml = '';
+    if (card.detail && card.detail.length > 0) {
+      detailHtml = card.detail.map(p => `
+        <div class="kpi-detail-row">
+          <span class="kpi-detail-name">${esc(p.rank)} ${esc(p.name)}</span>
+          <span class="kpi-detail-info">${esc(getOrgLabel(p.org))}</span>
+        </div>
+      `).join('');
+    } else if (card.detail) {
+      detailHtml = '<div style="font-size:12px;color:#aaa;text-align:center;padding:8px 0;">해당 인원 없음</div>';
+    }
+
+    div.innerHTML = `
+      <div class="kpi-label">${esc(card.label)}</div>
+      <div class="kpi-value" style="color:${card.color};">${card.value}</div>
+      <div class="kpi-sub">${card.sub}</div>
+      <div class="kpi-accent-bar" style="background:${card.color}; width:${pct}%;"></div>
+      ${card.detail !== null ? `
+        <div class="kpi-detail">
+          <div class="kpi-detail-inner">${detailHtml}</div>
+        </div>
+      ` : ''}
+    `;
+
+    if (card.clickable && card.key) {
+      div.addEventListener('click', () => {
+        kpiExpanded[card.key] = !kpiExpanded[card.key];
+        renderKpi();
+      });
+    }
+
+    row.appendChild(div);
+  });
+}
+
+/* ──────────── RENDER DONUT (SVG) ──────────── */
+function renderDonut() {
+  const stats  = computeStats(currentDate);
+  const svg    = document.getElementById('donutSvg');
+  const legend = document.getElementById('donutLegend');
+  const center = document.getElementById('donutCenterVal');
+
+  const total = stats.total || 1;
+  const segments = [
+    { label: '현재원', value: stats.현재원, color: '#27ae60' },
+    { label: '출타',   value: stats.출타,   color: '#e67e22' },
+    { label: '열외',   value: stats.열외,   color: '#8e44ad' },
+  ];
+
+  const cx = 80, cy = 80, r = 60, innerR = 38;
+  const circumference = 2 * Math.PI * r;
+
+  svg.innerHTML = '';
+
+  let offset = 0;
+  segments.forEach(seg => {
+    const fraction = seg.value / total;
+    const dash     = fraction * circumference;
+    const gap      = circumference - dash;
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', cx);
+    circle.setAttribute('cy', cy);
+    circle.setAttribute('r', r);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', seg.color);
+    circle.setAttribute('stroke-width', '22');
+    circle.setAttribute('stroke-dasharray', `${dash} ${gap}`);
+    circle.setAttribute('stroke-dashoffset', `-${offset}`);
+
+    // Animation: draw from 0 to final dasharray
+    circle.style.transition = 'stroke-dasharray 0.7s cubic-bezier(0.25,0.46,0.45,0.94), stroke-dashoffset 0.7s cubic-bezier(0.25,0.46,0.45,0.94)';
+
+    svg.appendChild(circle);
+    offset += dash;
+  });
+
+  // Background ring
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  bg.setAttribute('cx', cx); bg.setAttribute('cy', cy); bg.setAttribute('r', r);
+  bg.setAttribute('fill', 'none'); bg.setAttribute('stroke', '#f0f2f5');
+  bg.setAttribute('stroke-width', '22');
+  if (total === 0 || segments.every(s => s.value === 0)) {
+    svg.innerHTML = '';
+    svg.appendChild(bg);
+  }
+
+  center.textContent = stats.현재원;
+
+  legend.innerHTML = segments.map(seg => `
+    <div class="donut-legend-item">
+      <div class="donut-legend-dot" style="background:${seg.color};"></div>
+      <div class="donut-legend-label">${esc(seg.label)}</div>
+      <div class="donut-legend-val">${seg.value}명</div>
+    </div>
+  `).join('');
+}
+
+/* ──────────── RENDER BAR CHART ──────────── */
+function renderBarChart() {
+  const ds    = dateStr(currentDate);
+  const chart = document.getElementById('barChart');
+  chart.innerHTML = '';
+
+  // Group persons by org category
+  const grouped = {};
+  orgs.forEach(cat => {
+    grouped[cat.name] = { total: 0, 출타: 0, 열외: 0 };
+    cat.subs.forEach(sub => {
+      persons.filter(p => p.org === sub.id).forEach(p => {
+        grouped[cat.name].total++;
+        const cal = statusCal[p.id] || [];
+        const todayEntry = cal.find(e => e.from <= ds && e.to >= ds);
+        if (todayEntry) {
+          if (todayEntry.status === '출타') grouped[cat.name].출타++;
+          else if (todayEntry.status === '열외') grouped[cat.name].열외++;
+        }
+      });
+    });
+  });
+
+  const rows = Object.entries(grouped);
+  if (rows.length === 0) {
+    chart.innerHTML = '<div style="color:#aaa;font-size:12px;text-align:center;padding:20px;">데이터 없음</div>';
+    return;
+  }
+
+  rows.forEach(([name, data]) => {
+    const 현재 = Math.max(0, data.total - data.출타 - data.열외);
+    const pct  = data.total ? Math.round(현재 / data.total * 100) : 0;
+
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-label-row">
+        <span class="bar-label-name">${esc(name)}</span>
+        <span class="bar-label-pct">${현재}/${data.total}명 현재원</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="background:#27ae60; width:0%;" data-target="${pct}">
+          ${pct > 20 ? pct + '%' : ''}
+        </div>
+      </div>
+    `;
+    chart.appendChild(row);
+  });
+
+  // Animate bars
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      chart.querySelectorAll('.bar-fill').forEach(bar => {
+        bar.style.width = bar.dataset.target + '%';
+      });
+    });
+  });
+}
+
+/* ──────────── DATE NAV ──────────── */
+function updateDateDisplay() {
+  document.getElementById('dateTitle').textContent = formatTitle(currentDate);
+}
+
+document.getElementById('datePrev').addEventListener('click', () => {
+  currentDate.setDate(currentDate.getDate() - 1);
+  updateDateDisplay();
+  renderAll();
+});
+
+document.getElementById('dateNext').addEventListener('click', () => {
+  currentDate.setDate(currentDate.getDate() + 1);
+  updateDateDisplay();
+  renderAll();
+});
+
+document.getElementById('dateToday').addEventListener('click', () => {
+  currentDate = new Date();
+  currentDate.setHours(0,0,0,0);
+  updateDateDisplay();
+  renderAll();
+});
+
+/* ──────────── TOPBAR DATE ──────────── */
+function updateTopbarDate() {
+  const now = new Date();
+  document.getElementById('topbarDate').textContent = formatTitle(now);
+}
+
+/* ──────────── UTILS ──────────── */
+function esc(str) {
+  if (typeof str !== 'string') str = String(str || '');
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ──────────── RENDER ALL ──────────── */
+function renderAll() {
+  renderKpi();
+  renderDonut();
+  renderBarChart();
+}
+
+/* ──────────── INIT ──────────── */
+updateTopbarDate();
+updateDateDisplay();
+renderAll();
+</script>
+</body>
+</html>
